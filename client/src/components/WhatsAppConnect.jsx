@@ -109,17 +109,26 @@ const WhatsAppConnect = () => {
                 </div>
 
                 <div>
-                    <button
-                        onClick={() => setIsVisible(false)}
-                        className="btn"
-                        style={{
-                            background: 'transparent',
-                            border: '1px solid var(--border-color)',
-                            color: 'var(--text-color)'
-                        }}
-                    >
-                        Skip for Now
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                        <button
+                            onClick={fetchStatus}
+                            className="btn btn-success"
+                            style={{ padding: '8px 16px', fontSize: '0.9rem' }}
+                        >
+                            I've Scanned It
+                        </button>
+                        <button
+                            onClick={() => setIsVisible(false)}
+                            className="btn"
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid var(--border-color)',
+                                color: 'var(--text-color)'
+                            }}
+                        >
+                            Skip
+                        </button>
+                    </div>
                     <div style={{ marginTop: '10px', fontSize: '0.8rem', opacity: 0.7 }}>
                         You can reload the page to try again.
                     </div>
