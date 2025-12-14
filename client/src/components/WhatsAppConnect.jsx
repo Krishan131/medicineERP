@@ -3,82 +3,70 @@ import QRCode from 'react-qr-code';
 import api from '../api/api';
 
 const WhatsAppConnect = () => {
-    const [status, setStatus] = useState({ isReady: false, qrCode: null });
+    const [status, setStatus] = useState({ isReady: false, qrCode: null, status: 'DISCONNECTED' });
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false); // Controls the popup
 
     const fetchStatus = async () => {
         try {
             const res = await api.get('/sales/whatsapp/status');
             setStatus(res.data);
             setLoading(false);
+
+            // Auto close modal if ready
+            if (res.data.isReady) {
+                setShowModal(false);
+            }
         } catch (err) {
             console.error('Failed to fetch WhatsApp status', err);
             setLoading(false);
         }
     };
 
-    const [isVisible, setIsVisible] = useState(true);
-
     useEffect(() => {
         fetchStatus();
-        const interval = setInterval(fetchStatus, 3000); // Poll every 3 seconds
+        const interval = setInterval(fetchStatus, 5000); // Poll slower (5s) to save bandwidth
         return () => clearInterval(interval);
     }, []);
 
-    // If connected or dismissed by user, don't show anything
-    if (status.isReady || !isVisible) return null;
+    // 1. If Connected, Hide Completely (as requested)
+    if (status.isReady) return null;
 
-    // Loading state (Initializing)
-    if (status.status === 'INITIALIZING' && !status.qrCode) {
+    // 2. Dashboard Widget (Visible when NOT connected)
+    if (!showModal) {
         return (
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: 'rgba(0,0,0,0.85)',
-                zIndex: 1000,
+            <div className="card" style={{
+                marginBottom: '2rem',
+                background: 'linear-gradient(135deg, #dcf8c6 0%, #ffffff 100%)', // WhatsApp-ish tint
+                border: '1px solid #25D366',
                 display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                color: 'white',
-                flexDirection: 'column'
+                justifyContent: 'space-between',
+                alignItems: 'center'
             }}>
-                <div className="spinner" style={{ marginBottom: '20px' }}></div>
-                <h3>Starting WhatsApp Client...</h3>
-                <p>This may take up to 60 seconds.</p>
+                <div>
+                    <h3 style={{ color: '#075e54', marginBottom: '0.5rem' }}>WhatsApp Invoice Bot 🤖</h3>
+                    <p style={{ color: '#128c7e', marginBottom: 0 }}>
+                        {status.status === 'INITIALIZING'
+                            ? 'Client is waking up... Please wait.'
+                            : 'Connect to send automated invoices to customers.'}
+                    </p>
+                </div>
+                <button
+                    className="btn"
+                    onClick={() => setShowModal(true)}
+                    style={{
+                        background: '#25D366',
+                        color: 'white',
+                        boxShadow: '0 4px 12px rgba(37, 211, 102, 0.4)'
+                    }}
+                >
+                    {status.status === 'INITIALIZING' ? 'View Status' : 'Connect Now'}
+                </button>
             </div>
         );
     }
 
-    // Scanned but not ready yet (Authenticated)
-    if (status.status === 'AUTHENTICATED') {
-        return (
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: 'rgba(0,0,0,0.85)',
-                zIndex: 1000,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                color: 'white',
-                flexDirection: 'column'
-            }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
-                <h3>Scanned Successfully!</h3>
-                <p>Connecting to WhatsApp servers... Please wait.</p>
-            </div>
-        );
-    }
-
-    // If no QR yet (and not initializing/auth), show nothing
-    if (!status.qrCode) return null;
-
+    // 3. The Modal (Only visible when requested)
     return (
         <div style={{
             position: 'fixed',
@@ -97,41 +85,63 @@ const WhatsAppConnect = () => {
                 maxWidth: '400px',
                 width: '90%',
                 padding: '2rem',
-                position: 'relative'
+                position: 'relative',
+                animation: 'fadeIn 0.3s ease'
             }}>
+                {/* Close Button */}
+                <button
+                    onClick={() => setShowModal(false)}
+                    style={{
+                        position: 'absolute',
+                        top: '15px',
+                        right: '15px',
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '1.5rem',
+                        cursor: 'pointer',
+                        color: 'var(--text-secondary)'
+                    }}
+                >
+                    &times;
+                </button>
+
                 <h3 style={{ color: 'var(--primary-color)', marginBottom: '1rem' }}>Connect WhatsApp</h3>
-                <p style={{ marginBottom: '1.5rem', color: 'var(--text-color)' }}>
-                    Scan this QR code to enable automated invoice sending.
-                </p>
 
-                <div style={{ background: 'white', padding: '15px', display: 'inline-block', borderRadius: '10px', marginBottom: '1.5rem' }}>
-                    <QRCode value={status.qrCode} size={220} />
-                </div>
+                {status.status === 'INITIALIZING' && (
+                    <div style={{ padding: '2rem 0' }}>
+                        <div className="spinner" style={{ margin: '0 auto 1rem' }}></div>
+                        <p>Starting WhatsApp Client on Server...</p>
+                        <small className="text-muted">This takes about 60 seconds on cloud servers.</small>
+                    </div>
+                )}
 
-                <div>
-                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        <button
-                            onClick={fetchStatus}
-                            className="btn btn-success"
-                            style={{ padding: '8px 16px', fontSize: '0.9rem' }}
-                        >
-                            I've Scanned It
-                        </button>
-                        <button
-                            onClick={() => setIsVisible(false)}
-                            className="btn"
-                            style={{
-                                background: 'transparent',
-                                border: '1px solid var(--border-color)',
-                                color: 'var(--text-color)'
-                            }}
-                        >
-                            Skip
-                        </button>
+                {(status.status === 'QR_READY' || status.qrCode) && (
+                    <>
+                        <p style={{ marginBottom: '1.5rem', color: 'var(--text-color)' }}>
+                            Scan this QR code with your phone.
+                        </p>
+                        <div style={{ background: 'white', padding: '15px', display: 'inline-block', borderRadius: '10px', marginBottom: '1.5rem' }}>
+                            <QRCode value={status.qrCode} size={220} />
+                        </div>
+                    </>
+                )}
+
+                {status.status === 'AUTHENTICATED' && (
+                    <div style={{ padding: '2rem 0' }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
+                        <h3>Linked Successfully!</h3>
+                        <p>Waiting for server to confirm...</p>
                     </div>
-                    <div style={{ marginTop: '10px', fontSize: '0.8rem', opacity: 0.7 }}>
-                        You can reload the page to try again.
-                    </div>
+                )}
+
+                <div style={{ marginTop: '1rem', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                    <button
+                        onClick={fetchStatus}
+                        className="btn btn-success"
+                        style={{ padding: '8px 16px', fontSize: '0.9rem' }}
+                    >
+                        Check Status
+                    </button>
                 </div>
             </div>
         </div>
