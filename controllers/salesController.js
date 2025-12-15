@@ -57,12 +57,10 @@ exports.createInvoice = async (req, res) => {
         // Send response IMMEDIATELY so frontend doesn't timeout
         res.json(invoice);
 
-        // Perform PDF Generation and WhatsApp Sending in the BACKGROUND
-        // We use setImmediate or just don't await this block to unblock the event loop
+        // Perform PDF Generation in the BACKGROUND (for storage/future use)
         (async () => {
             try {
                 const { generateInvoicePDF } = require('../services/pdfService');
-                const { sendInvoicePDF } = require('../services/whatsappService');
                 const path = require('path');
                 const fs = require('fs');
 
@@ -75,13 +73,10 @@ exports.createInvoice = async (req, res) => {
                 const invoicePath = path.join(invoiceDir, `invoice_${invoice._id}.pdf`);
                 await generateInvoicePDF(invoice, invoicePath);
 
-                if (customerContact) {
-                    console.log(`Sending invoice to ${customerContact}...`);
-                    // Use user ID for WhatsApp Session context
-                    await sendInvoicePDF(req.user.id, customerContact, invoicePath, invoice._id);
-                }
+                console.log(`Invoice PDF generated: ${invoicePath}`);
+
             } catch (pdfErr) {
-                console.error('Error in Background PDF/WhatsApp generation:', pdfErr);
+                console.error('Error in Background PDF generation:', pdfErr);
             }
         })();
     } catch (err) {
@@ -122,22 +117,4 @@ exports.getInvoiceById = async (req, res) => {
         console.error(err.message);
         res.status(500).send('Server Error');
     }
-};
-
-// @route   GET api/sales/whatsapp/status
-// @desc    Get WhatsApp implementation status (QR code or Ready)
-// @access  Private
-exports.getWhatsAppStatus = (req, res) => {
-    const { getQrCode, isClientReady, initializeWhatsApp, getClientStatus } = require('../services/whatsappService');
-    const userId = req.user.id;
-
-    // Lazy Init: If checking status and not ready, define/start client
-    // Note: In production, might want a specific 'connect' endpoint, but this works for auto-connect
-    initializeWhatsApp(userId);
-
-    res.json({
-        isReady: isClientReady(userId),
-        status: getClientStatus(userId), // Add detailed status for UI
-        qrCode: getQrCode(userId)
-    });
 };

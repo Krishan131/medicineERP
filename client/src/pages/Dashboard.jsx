@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import Navbar from '../components/Navbar';
 import BillingSection from '../components/BillingSection';
-import WhatsAppConnect from '../components/WhatsAppConnect';
 import api from '../api/api';
 import AuthContext from '../context/AuthContext'; // Import AuthContext (Default Export)
 import { Link } from 'react-router-dom';
@@ -119,9 +118,6 @@ const Dashboard = () => {
                         </div>
                     </Link>
                 </div>
-
-                {/* WhatsApp Connect Panel */}
-                <WhatsAppConnect />
 
                 {/* Billing Section */}
                 <BillingSection
