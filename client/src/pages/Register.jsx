@@ -3,18 +3,18 @@ import AuthContext from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Register = () => {
-    const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+    const [formData, setFormData] = useState({ username: '', email: '', password: '', shopName: '' });
     const [error, setError] = useState('');
     const { register } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const { username, email, password } = formData;
+    const { username, email, password, shopName } = formData;
 
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const onSubmit = async e => {
         e.preventDefault();
-        const res = await register(username, email, password);
+        const res = await register(username, email, password, shopName); // Updated to pass shopName
         if (res.success) {
             navigate('/');
         } else {
@@ -26,9 +26,13 @@ const Register = () => {
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column' }}>
             <div className="card" style={{ width: '350px' }}>
                 <h2 style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--primary-color)' }}>Medicine ERP</h2>
-                <h3 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Register</h3>
+                <h3 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Retailer Register</h3>
                 {error && <div style={{ color: 'var(--danger-color)', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
                 <form onSubmit={onSubmit}>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Shop Name</label>
+                        <input type="text" name="shopName" value={shopName} onChange={onChange} required placeholder="e.g. City Medicals" />
+                    </div>
                     <div style={{ marginBottom: '1rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem' }}>Username</label>
                         <input type="text" name="username" value={username} onChange={onChange} required />

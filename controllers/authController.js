@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 // @desc    Register user
 // @access  Public
 exports.registerUser = async (req, res) => {
-    const { username, email, password, role } = req.body;
+    const { username, email, password, role, shopName } = req.body;
 
     try {
         // Check if user exists by Email OR Username
@@ -22,7 +22,8 @@ exports.registerUser = async (req, res) => {
             username,
             email,
             password,
-            role
+            role,
+            shopName: shopName || 'My Medicine Shop'
         });
 
         const salt = await bcrypt.genSalt(10);
@@ -43,7 +44,7 @@ exports.registerUser = async (req, res) => {
             { expiresIn: 360000 }, // Long expiry for dev
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
+                res.json({ token, user: { id: user.id, username: user.username, role: user.role, shopName: user.shopName } });
             }
         );
     } catch (err) {
@@ -84,7 +85,7 @@ exports.loginUser = async (req, res) => {
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
+                res.json({ token, user: { id: user.id, username: user.username, role: user.role, shopName: user.shopName || 'My Medicine Shop' } });
             }
         );
     } catch (err) {

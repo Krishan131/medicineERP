@@ -11,6 +11,11 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    shopName: {
+        type: String,
+        required: true, // Making it required for all new retailer registrations
+        default: 'My Medicine Shop' // Default for existing users to avoid breakage
+    },
     password: {
         type: String,
         required: true

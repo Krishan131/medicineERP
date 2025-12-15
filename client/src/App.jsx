@@ -11,6 +11,8 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import './App.css';
 
+import CustomerDashboard from './pages/customer/CustomerDashboard';
+
 function App() {
     return (
         <AuthProvider>
@@ -19,6 +21,7 @@ function App() {
                     <Routes>
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+                        <Route path="/customer/dashboard" element={<CustomerDashboard />} />
                         <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
                         <Route path="/inventory" element={<PrivateRoute><Inventory /></PrivateRoute>} />
                         <Route path="/low-stock" element={<PrivateRoute><LowStock /></PrivateRoute>} />
