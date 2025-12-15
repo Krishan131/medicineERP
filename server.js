@@ -9,9 +9,7 @@ dotenv.config();
 // Connect Database
 connectDB();
 
-// Initialize WhatsApp Client - REMOVED (Lazy load per user in controller)
-// const { initializeWhatsApp } = require('./services/whatsappService');
-// initializeWhatsApp();
+
 
 const app = express();
 
